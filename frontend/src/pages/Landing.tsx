@@ -2,73 +2,115 @@ import { Link } from 'react-router-dom'
 
 export default function Landing() {
   return (
-    <div className="mx-auto flex min-h-screen w-full max-w-6xl flex-col gap-10 px-6 py-12">
-      <header className="flex items-center justify-between">
-        <div className="text-sm font-semibold uppercase tracking-[0.25em] text-secondary">
-          Expense Tracker
-        </div>
-        <div className="flex gap-3">
-          <Link
-            to="/signin"
-            className="rounded-lg border border-border px-4 py-2 text-sm font-semibold text-primary"
-          >
-            Sign in
-          </Link>
-          <Link
-            to="/signup"
-            className="rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-white"
-          >
-            Sign up
-          </Link>
-        </div>
-      </header>
-
-      <section className="grid gap-10 rounded-2xl border border-border bg-surface p-10 shadow-soft lg:grid-cols-[1.1fr_0.9fr]">
-        <div className="space-y-5">
-          <h1 className="text-4xl font-semibold text-primary">
-            A calm space to track daily expenses.
-          </h1>
-          <p className="text-base text-secondary">
-            Capture spending in seconds, filter by category, and stay on top of your
-            totals with a minimal dashboard designed for clarity.
-          </p>
-          <div className="flex flex-wrap gap-3">
+    <div className="min-h-screen flex flex-col bg-background">
+      {/* Header at the very top */}
+      <header className="w-full border-b border-border bg-surface shadow-soft">
+        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
+          <div className="flex items-center gap-4">
+            <div>
+              <p className="text-lg uppercase tracking-[0.4em] text-secondary">MyExpense</p>
+              <p className="text-sm font-semibold text-gray-500">Expense Tracker</p>
+            </div>
+          </div>
+          {/* <div className="flex flex-wrap gap-3">
             <Link
-              to="/dashboard"
-              className="rounded-lg bg-accent px-5 py-2.5 text-sm font-semibold text-white"
+              to="/signin"
+              className="rounded-lg border border-border px-4 py-2 text-sm font-semibold text-primary"
             >
-              Open Dashboard
+              Sign in
             </Link>
             <Link
               to="/signup"
-              className="rounded-lg border border-border px-5 py-2.5 text-sm font-semibold text-primary"
+              className="rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-white"
             >
-              Create account
+              Sign up
             </Link>
-          </div>
+          </div> */}
         </div>
-        <div className="space-y-4 rounded-xl border border-border bg-background p-6">
-          <div>
-            <p className="text-xs uppercase tracking-[0.2em] text-secondary">Today</p>
-            <p className="mt-2 text-3xl font-semibold text-primary">₹1,240</p>
-            <p className="text-sm text-secondary">Across 4 expenses</p>
+      </header>
+
+      {/* Main content centered and spaced */}
+      <main className="flex-1 flex items-center justify-center">
+        <section className="w-full max-w-6xl grid gap-10 rounded-2xl border border-border bg-surface p-10 shadow-soft my-12 lg:grid-cols-[1.1fr_0.9fr]">
+          <div className="space-y-5 flex flex-col justify-center">
+            <h1 className="text-4xl font-semibold text-primary">
+              A calm space to track daily expenses.
+            </h1>
+            <p className="text-base text-secondary">
+              Capture spending in seconds, filter by category, and stay on top of your
+              totals with a minimal dashboard designed for clarity.
+            </p>
+            <div className="flex flex-wrap gap-3">
+              <Link
+                to="/dashboard"
+                className="rounded-lg bg-accent px-5 py-2.5 text-sm font-semibold text-white"
+              >
+                Open Dashboard
+              </Link>
+              <Link
+                to="/signup"
+                className="rounded-lg border border-border px-5 py-2.5 text-sm font-semibold text-primary"
+              >
+                Create account
+              </Link>
+            </div>
           </div>
-          <div className="rounded-lg border border-border bg-surface p-4 text-sm">
-            <div className="flex items-center justify-between">
-              <span className="text-secondary">Food</span>
-              <span className="font-semibold text-primary">₹420</span>
+          <div className="space-y-6 rounded-xl border border-border bg-background p-6 flex flex-col justify-center">
+            <div className="mb-2">
+              <p className="text-xs uppercase tracking-[0.2em] text-secondary">This Month</p>
+              <p className="mt-2 text-3xl font-semibold text-primary">₹8,450</p>
+              <p className="text-sm text-secondary">Across 22 expenses</p>
             </div>
-            <div className="mt-3 flex items-center justify-between">
-              <span className="text-secondary">Travel</span>
-              <span className="font-semibold text-primary">₹320</span>
+            {/* Simple Bar Chart (SVG) */}
+            <div className="rounded-lg border border-border bg-surface p-4">
+              <p className="mb-2 text-xs text-secondary font-semibold">Spending by Category</p>
+              <svg viewBox="0 0 220 80" width="100%" height="80" className="w-full h-20">
+                {/* Food */}
+                <rect x="10" y="30" width="40" height="40" fill="#34d399" rx="4" />
+                <text x="30" y="25" textAnchor="middle" fontSize="12" fill="#374151">Food</text>
+                {/* Travel */}
+                <rect x="60" y="50" width="40" height="20" fill="#60a5fa" rx="4" />
+                <text x="80" y="45" textAnchor="middle" fontSize="12" fill="#374151">Travel</text>
+                {/* Shopping */}
+                <rect x="110" y="20" width="40" height="50" fill="#f472b6" rx="4" />
+                <text x="130" y="15" textAnchor="middle" fontSize="12" fill="#374151">Shop</text>
+                {/* Bills */}
+                <rect x="160" y="50" width="40" height="20" fill="#fbbf24" rx="4" />
+                <text x="180" y="45" textAnchor="middle" fontSize="12" fill="#374151">Bills</text>
+              </svg>
+              <div className="mt-4 grid grid-cols-2 gap-2 text-xs">
+                <div className="flex items-center gap-2"><span className="inline-block h-3 w-3 rounded bg-emerald-400"></span>Food: <span className="font-semibold text-primary">₹2,200</span></div>
+                <div className="flex items-center gap-2"><span className="inline-block h-3 w-3 rounded bg-blue-400"></span>Travel: <span className="font-semibold text-primary">₹1,100</span></div>
+                <div className="flex items-center gap-2"><span className="inline-block h-3 w-3 rounded bg-pink-400"></span>Shopping: <span className="font-semibold text-primary">₹4,000</span></div>
+                <div className="flex items-center gap-2"><span className="inline-block h-3 w-3 rounded bg-yellow-400"></span>Bills: <span className="font-semibold text-primary">₹1,150</span></div>
+              </div>
             </div>
-            <div className="mt-3 flex items-center justify-between">
-              <span className="text-secondary">Shopping</span>
-              <span className="font-semibold text-primary">₹500</span>
+            {/* Key stats */}
+            <div className="mt-4 flex flex-wrap gap-4 justify-between text-xs">
+              <div className="flex flex-col items-center bg-surface border border-border rounded-lg px-3 py-2 min-w-[90px]">
+                <span className="font-bold text-lg text-primary">₹1,240</span>
+                <span className="text-secondary">Today</span>
+              </div>
+              <div className="flex flex-col items-center bg-surface border border-border rounded-lg px-3 py-2 min-w-[90px]">
+                <span className="font-bold text-lg text-primary">₹3,200</span>
+                <span className="text-secondary">This Week</span>
+              </div>
+              <div className="flex flex-col items-center bg-surface border border-border rounded-lg px-3 py-2 min-w-[90px]">
+                <span className="font-bold text-lg text-primary">₹8,450</span>
+                <span className="text-secondary">This Month</span>
+              </div>
             </div>
           </div>
+        </section>
+      </main>
+
+      {/* Footer at the very bottom */}
+      <footer className="w-full border-t border-border bg-surface shadow-soft">
+        <div className="mx-auto max-w-6xl flex flex-col gap-3 px-6 py-4 text-sm text-secondary sm:flex-row sm:items-center sm:justify-between">
+          <p>Build better spending habits with a simple, privacy-friendly expense tracker.</p>
+          <p className="text-xs">© {new Date().getFullYear()} MyExpense. All rights reserved.</p>
         </div>
-      </section>
+      </footer>
     </div>
   )
 }
