@@ -6,7 +6,10 @@ import ExpenseFormModal from '../components/ExpenseFormModal'
 import ExpenseTable from '../components/ExpenseTable'
 import { clearAccessToken, getAccessToken } from '../utils/auth'
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
+const rawApiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
+const API_BASE_URL = rawApiBaseUrl.match(/^https?:\/\//i)
+  ? rawApiBaseUrl.replace(/\/$/, '')
+  : `https://${rawApiBaseUrl.replace(/\/$/, '')}`
 
 type Expense = {
   id: string
