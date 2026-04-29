@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import ExpenseFilters from '../components/ExpenseFilters'
 import ExpenseFormModal from '../components/ExpenseFormModal'
 import ExpenseTable from '../components/ExpenseTable'
-import { clearAccessToken } from '../utils/auth'
+import { clearAccessToken, getAccessToken } from '../utils/auth'
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
 
@@ -21,6 +21,14 @@ type ExpenseListResponse = {
   total: number
 }
 
+const getAuthHeaders = () => {
+  const token = getAccessToken()
+  return {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${token}`,
+  }
+}
+
 const fetchExpenses = async (category: string, sort: string) => {
   const params = new URLSearchParams()
   if (category && category !== 'All') {
@@ -32,6 +40,9 @@ const fetchExpenses = async (category: string, sort: string) => {
 
   const response = await fetch(
     `${API_BASE_URL}/expenses${params.toString() ? `?${params}` : ''}`,
+    {
+      headers: getAuthHeaders(),
+    }
   )
   if (!response.ok) {
     throw new Error('Failed to load expenses. Please try again.')
@@ -48,9 +59,7 @@ const createExpense = async (payload: {
 }) => {
   const response = await fetch(`${API_BASE_URL}/expenses`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
+    headers: getAuthHeaders(),
     body: JSON.stringify(payload),
   })
   if (!response.ok) {

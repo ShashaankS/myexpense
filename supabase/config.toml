@@ -1,0 +1,13 @@
+# Supabase Configuration for MyExpense
+
+[db]
+# Use `supabase start` to start the local Supabase stack
+# Use `supabase push` to push migrations to production
+major_version = 17
+
+[api]
+enabled = true
+port = 54321
+
+[auth]
+enable_signup = true
