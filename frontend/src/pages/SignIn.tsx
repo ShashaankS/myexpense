@@ -1,9 +1,9 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import PageShell from '../components/PageShell'
 import { useAuth } from '../contexts/AuthContext'
 import { useToast } from '../contexts/ToastContext'
-import { getAccessToken } from '../utils/auth'
+import { getAccessToken, getSupabaseGoogleAuthUrl, parseOAuthRedirectHash, clearOAuthRedirectHash } from '../utils/auth'
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL
 const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY
@@ -17,6 +17,36 @@ export default function SignIn() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
+
+  useEffect(() => {
+    const { accessToken, error } = parseOAuthRedirectHash()
+    if (!accessToken && !error) {
+      return
+    }
+
+    clearOAuthRedirectHash()
+
+    if (accessToken) {
+      onAuthSuccess(accessToken)
+      showToast('Signed in successfully.', 'success')
+      navigate('/dashboard')
+      return
+    }
+
+    const message = `Google sign-in failed: ${error}`
+    setError(message)
+    showToast(message, 'error')
+  }, [navigate, onAuthSuccess, showToast])
+
+  const handleGoogleSignIn = () => {
+    if (!SUPABASE_URL) {
+      const message = 'Supabase URL is not configured.'
+      setError(message)
+      showToast(message, 'error')
+      return
+    }
+    window.location.href = getSupabaseGoogleAuthUrl(`${window.location.origin}/signin`)
+  }
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault()
@@ -109,6 +139,18 @@ export default function SignIn() {
             className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
             placeholder="••••••••"
           />
+        </div>
+        <button
+          type="button"
+          onClick={handleGoogleSignIn}
+          className="w-full rounded-lg border border-border bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50"
+        >
+          Sign in with Google
+        </button>
+        <div className="flex items-center justify-center py-1 text-sm text-secondary">
+          <span className="inline-block h-px w-12 bg-border" />
+          <span className="px-3">or</span>
+          <span className="inline-block h-px w-12 bg-border" />
         </div>
         <button
           type="submit"
