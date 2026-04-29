@@ -1,29 +1,37 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { setAccessToken } from '../utils/auth'
+import PageShell from '../components/PageShell'
+import { useAuth } from '../contexts/AuthContext'
+import { useToast } from '../contexts/ToastContext'
+import { getAccessToken } from '../utils/auth'
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL
 const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY
 
 export default function SignIn() {
   const navigate = useNavigate()
+  const { onAuthSuccess } = useAuth()
+  const { showToast } = useToast()
+  const isAuthenticated = Boolean(getAccessToken())
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [status, setStatus] = useState('')
   const [error, setError] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault()
-    setStatus('')
     setError('')
 
     if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
-      setError('Supabase credentials are missing in .env.')
+      const message = 'Supabase credentials are missing in .env.'
+      setError(message)
+      showToast(message, 'error')
       return
     }
     if (!email.trim() || !password) {
-      setError('Email and password are required.')
+      const message = 'Email and password are required.'
+      setError(message)
+      showToast(message, 'error')
       return
     }
 
@@ -36,6 +44,7 @@ export default function SignIn() {
           headers: {
             'Content-Type': 'application/json',
             apikey: SUPABASE_ANON_KEY,
+            Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
           },
           body: JSON.stringify({
             email: email.trim(),
@@ -52,28 +61,32 @@ export default function SignIn() {
 
       const payload = await response.json()
       const token = payload?.access_token || ''
-      if (token) {
-        setAccessToken(token)
+      if (!token) {
+        throw new Error('Sign in failed. No access token returned.')
       }
-      setStatus('Signed in successfully.')
+
+      onAuthSuccess(token)
+      showToast('Signed in successfully.', 'success')
       navigate('/dashboard')
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Sign in failed.'
       setError(message)
+      showToast(message, 'error')
     } finally {
       setIsSubmitting(false)
     }
   }
 
   return (
-    <div className="mx-auto flex min-h-screen w-full max-w-md flex-col justify-center gap-6 px-6 py-12">
-      <div className="space-y-2 text-center">
-        <p className="text-xs uppercase tracking-[0.3em] text-secondary">Welcome back</p>
-        <h1 className="text-3xl font-semibold text-primary">Sign in</h1>
-        <p className="text-sm text-secondary">Access your expense dashboard.</p>
-      </div>
+    <PageShell isAuthenticated={isAuthenticated}>
+      <div className="mx-auto flex w-full max-w-md flex-col justify-center gap-6 px-6 py-12">
+        <div className="space-y-2 text-center">
+          <p className="text-xs uppercase tracking-[0.3em] text-secondary">Welcome back</p>
+          <h1 className="text-3xl font-semibold text-primary">Sign in</h1>
+          <p className="text-sm text-secondary">Access your expense dashboard.</p>
+        </div>
 
-      <form
+        <form
         onSubmit={handleSubmit}
         className="space-y-4 rounded-xl border border-border bg-surface p-6 shadow-soft"
       >
@@ -104,11 +117,6 @@ export default function SignIn() {
         >
           {isSubmitting ? 'Signing in...' : 'Sign in'}
         </button>
-        {status && (
-          <p className="rounded-lg border border-emerald-100 bg-emerald-50 px-3 py-2 text-xs text-emerald-700">
-            {status}
-          </p>
-        )}
         {error && (
           <p className="rounded-lg border border-red-100 bg-red-50 px-3 py-2 text-xs text-red-600">
             {error}
@@ -123,5 +131,6 @@ export default function SignIn() {
         </Link>
       </p>
     </div>
+    </PageShell>
   )
 }

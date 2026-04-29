@@ -4,7 +4,10 @@ import { useNavigate } from 'react-router-dom'
 import ExpenseFilters from '../components/ExpenseFilters'
 import ExpenseFormModal from '../components/ExpenseFormModal'
 import ExpenseTable from '../components/ExpenseTable'
-import { clearAccessToken, getAccessToken } from '../utils/auth'
+import PageShell from '../components/PageShell'
+import { getAccessToken } from '../utils/auth'
+import { useAuth } from '../contexts/AuthContext'
+import { useToast } from '../contexts/ToastContext'
 
 const rawApiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
 const API_BASE_URL = rawApiBaseUrl.match(/^https?:\/\//i)
@@ -73,11 +76,12 @@ const createExpense = async (payload: {
 
 export default function Dashboard() {
   const navigate = useNavigate()
+  const { onSignOut } = useAuth()
+  const { showToast } = useToast()
   const queryClient = useQueryClient()
   const [filterCategory, setFilterCategory] = useState('All')
   const [sortOrder, setSortOrder] = useState('date_desc')
   const [modalOpen, setModalOpen] = useState(false)
-  const [formError, setFormError] = useState('')
 
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ['expenses', filterCategory, sortOrder],
@@ -88,11 +92,11 @@ export default function Dashboard() {
     mutationFn: createExpense,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['expenses'] })
-      setFormError('')
       setModalOpen(false)
+      showToast('Expense added successfully.', 'success')
     },
     onError: (error: Error) => {
-      setFormError(error.message)
+      showToast(error.message, 'error')
     },
   })
 
@@ -118,93 +122,100 @@ export default function Dashboard() {
   }, [expenses])
 
   const handleSignOut = () => {
-    clearAccessToken()
+    onSignOut()
+    showToast('Signed out successfully.', 'success')
     navigate('/signin')
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-8">
-      <header className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <p className="text-sm font-medium uppercase tracking-[0.2em] text-secondary">
-          Dashboard
-        </p>
-        <div className="flex flex-col gap-2">
-          <h1 className="text-3xl font-semibold text-primary">Expense Overview</h1>
-          <p className="max-w-2xl text-sm text-secondary">
-            Keep your spending organized with filters, summaries, and quick entry.
+    <PageShell isAuthenticated={true} onSignOut={handleSignOut}>
+      <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-8">
+        <header className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <p className="text-sm font-medium uppercase tracking-[0.2em] text-secondary">
+            Dashboard
           </p>
-        </div>
-        <button
-          type="button"
-          onClick={handleSignOut}
-          className="rounded-lg border border-border px-4 py-2 text-sm font-semibold text-primary"
-        >
-          Sign out
-        </button>
-      </header>
+          <div className="flex flex-col gap-2">
+            <h1 className="text-3xl font-semibold text-primary">Expense Overview</h1>
+            <p className="max-w-2xl text-sm text-secondary">
+              Keep your spending organized with filters, summaries, and quick entry.
+            </p>
+          </div>
+        </header>
 
-      <section className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
-        <div className="rounded-xl border border-border bg-surface p-6 shadow-soft">
-          <h2 className="text-lg font-semibold text-primary">Add Expense</h2>
-          <p className="text-sm text-secondary">
-            Use the quick modal to keep logging fast.
-          </p>
-          <button
-            type="button"
-            onClick={() => setModalOpen(true)}
-            className="mt-4 rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-white transition hover:bg-accentDark"
-          >
-            Open Add Expense
-          </button>
-          {formError && (
-            <p className="mt-3 text-sm text-red-600">{formError}</p>
-          )}
-        </div>
-        <ExpenseFilters
-          category={filterCategory}
-          sort={sortOrder}
-          total={total}
-          onCategoryChange={setFilterCategory}
-          onSortChange={setSortOrder}
-          onOpenModal={() => setModalOpen(true)}
+        <section className="grid gap-6 lg:grid-cols-[1.4fr_0.6fr]">
+          <div className="space-y-6">
+            <div className="rounded-xl border border-border bg-surface p-6 shadow-soft">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-sm uppercase tracking-[0.2em] text-secondary">Summary</p>
+                  <h2 className="text-2xl font-semibold text-primary">Expenses at a glance</h2>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setModalOpen(true)}
+                  className="rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-white transition hover:bg-accentDark"
+                >
+                  + Add Expense
+                </button>
+              </div>
+              <div className="mt-6 grid gap-4 sm:grid-cols-2">
+                <div className="rounded-2xl border border-border bg-background p-5">
+                  <p className="text-xs uppercase tracking-[0.2em] text-secondary">Total spent</p>
+                  <p className="mt-2 text-3xl font-semibold text-primary">₹{total.toFixed(2)}</p>
+                </div>
+                <div className="rounded-2xl border border-border bg-background p-5">
+                  <p className="text-xs uppercase tracking-[0.2em] text-secondary">Expenses</p>
+                  <p className="mt-2 text-3xl font-semibold text-primary">{expenses.length}</p>
+                </div>
+              </div>
+            </div>
+
+            {isLoading && (
+              <div className="rounded-lg border border-border bg-surface px-4 py-3 text-sm text-secondary">
+                Loading expenses...
+              </div>
+            )}
+
+            {isError && (
+              <div className="flex flex-col gap-3 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
+                Something went wrong while loading expenses.
+                <button
+                  type="button"
+                  onClick={() => refetch()}
+                  className="w-fit rounded-lg border border-red-200 bg-white px-3 py-1 text-xs font-semibold text-red-600"
+                >
+                  Retry
+                </button>
+              </div>
+            )}
+
+            {!isLoading && !isError && expenses.length === 0 && (
+              <div className="rounded-lg border border-border bg-surface px-4 py-3 text-sm text-secondary">
+                No expenses found.
+              </div>
+            )}
+
+            {!isLoading && !isError && expenses.length > 0 && (
+              <ExpenseTable expenses={expenses} />
+            )}
+          </div>
+
+          <ExpenseFilters
+            category={filterCategory}
+            sort={sortOrder}
+            onCategoryChange={setFilterCategory}
+            onSortChange={setSortOrder}
+            onOpenModal={() => setModalOpen(true)}
+          />
+        </section>
+
+        <ExpenseFormModal
+          open={modalOpen}
+          onClose={() => setModalOpen(false)}
+          onSubmit={handleAddExpense}
+          isSubmitting={mutation.isPending}
         />
-      </section>
-
-      {isLoading && (
-        <div className="rounded-lg border border-border bg-surface px-4 py-3 text-sm text-secondary">
-          Loading expenses...
-        </div>
-      )}
-
-      {isError && (
-        <div className="flex flex-col gap-3 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
-          Something went wrong while loading expenses.
-          <button
-            type="button"
-            onClick={() => refetch()}
-            className="w-fit rounded-lg border border-red-200 bg-white px-3 py-1 text-xs font-semibold text-red-600"
-          >
-            Retry
-          </button>
-        </div>
-      )}
-
-      {!isLoading && !isError && expenses.length === 0 && (
-        <div className="rounded-lg border border-border bg-surface px-4 py-3 text-sm text-secondary">
-          No expenses found.
-        </div>
-      )}
-
-      {!isLoading && !isError && expenses.length > 0 && (
-        <ExpenseTable expenses={expenses} />
-      )}
-
-      <ExpenseFormModal
-        open={modalOpen}
-        onClose={() => setModalOpen(false)}
-        onSubmit={handleAddExpense}
-        isSubmitting={mutation.isPending}
-      />
-    </div>
+      </div>
+    </PageShell>
   )
 }
