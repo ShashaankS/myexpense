@@ -22,13 +22,6 @@ export default function ExpenseFilters({
             Refine the list by category and date.
           </p>
         </div>
-        <button
-          type="button"
-          onClick={onOpenModal}
-          className="rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-white transition hover:bg-accentDark"
-        >
-          + Add Expense
-        </button>
       </div>
 
       <div className="mt-4 grid gap-4">

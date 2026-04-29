@@ -134,12 +134,6 @@ export default function Dashboard() {
           <p className="text-sm font-medium uppercase tracking-[0.2em] text-secondary">
             Dashboard
           </p>
-          <div className="flex flex-col gap-2">
-            <h1 className="text-3xl font-semibold text-primary">Expense Overview</h1>
-            <p className="max-w-2xl text-sm text-secondary">
-              Keep your spending organized with filters, summaries, and quick entry.
-            </p>
-          </div>
         </header>
 
         <section className="grid gap-6 lg:grid-cols-[1.4fr_0.6fr]">
