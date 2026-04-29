@@ -5,7 +5,6 @@ export default function ExpenseFilters({
   sort,
   onCategoryChange,
   onSortChange,
-  onOpenModal,
 }: {
   category: string
   sort: string
